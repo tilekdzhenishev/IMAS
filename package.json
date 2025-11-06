@@ -1,0 +1,36 @@
+{
+  "name": "interactive-museum-artifact-system",
+  "version": "1.0.0",
+  "description": "IoT-based museum artifact system with sensor interaction, Microsoft Azure API, and multi-sensory responses",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "node tests/test-api.js",
+    "simulate-sensor": "node simulators/sensor-simulator.js",
+    "simulate-response": "node simulators/response-controller.js"
+  },
+  "keywords": [
+    "iot",
+    "museum",
+    "express",
+    "rest-api",
+    "sensors"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^8.0.0",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "morgan": "^1.10.0",
+    "express-validator": "^7.0.1",
+    "axios": "^1.6.0",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
+
