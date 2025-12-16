@@ -63,8 +63,8 @@ IMAS/
 ├── .env.example                 # Environment variables template
 ├── .gitignore
 ├── package.json
-└── README.md
-└── diagram1.jpg
+├──README.md
+├── diagram1.jpg
 └── diagram2.jpg
 ```
 
