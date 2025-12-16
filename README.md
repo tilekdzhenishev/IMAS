@@ -64,6 +64,8 @@ IMAS/
 ├── .gitignore
 ├── package.json
 └── README.md
+└── diagram1.jpg
+└── diagram2.jpg
 ```
 
 ## 🚀 Getting Started
@@ -509,6 +511,10 @@ This project is licensed under the MIT License.
 - Express.js community
 - MongoDB documentation
 - Node.js ecosystem
+
+## System Architecture
+
+System Architecture Diagram(diagram1.jpg, diagram2.jpg)
 
 ## 📞 Support
 
