@@ -1,17 +1,20 @@
 {
-  "name": "",
+  "name": "imas-azure-functions",
   "version": "1.0.0",
-  "description": "",
+  "description": "Azure Functions for IMAS IoT telemetry processing",
   "main": "src/index.js",
   "scripts": {
     "start": "func start",
-    "test": "echo \"No tests yet...\""
+    "test": "node test-functions.js",
+    "test:local": "FUNCTIONS_URL=http://localhost:7071 node test-functions.js",
+    "check-deploy": "node check-deploy.js"
   },
   "dependencies": {
     "@azure/cosmos": "^4.9.0",
     "@azure/functions": "^4.0.0"
   },
   "devDependencies": {
-    "azure-functions-core-tools": "^4.x"
+    "azure-functions-core-tools": "^4.x",
+    "axios": "^1.6.0"
   }
 }
