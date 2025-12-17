@@ -89,6 +89,8 @@ app.http('FunctionApi', {
                         service: 'Azure Functions API'
                     })
                 };
+            } else if (routePath.includes('/distance/latest') || path.includes('/distance/latest')) {
+                return await handleLatestDistance(request, context, headers);
             } else if (routePath.includes('/telemetry/stats') || path.includes('/telemetry/stats')) {
                 return await handleStats(request, context, headers);
             } else if (routePath.includes('/telemetry/latest') || path.includes('/telemetry/latest')) {
@@ -107,7 +109,8 @@ app.http('FunctionApi', {
                             'GET /api/FunctionApi/telemetry/stats': 'Get statistics',
                             'POST /api/FunctionApi/telemetry': 'Create telemetry record',
                             'POST /api/FunctionApi/command': 'Send command to device',
-                            'GET /api/FunctionApi/health': 'Health check'
+                            'GET /api/FunctionApi/health': 'Health check',
+                            'GET /api/FunctionApi/distance/latest?deviceId=DEVICE_1': 'Get latest distance'
                         }
                     })
                 };
@@ -233,6 +236,54 @@ async function handleStats(request, context, headers) {
             }
         })
     };
+}
+
+async function handleLatestDistance(request, context, headers) {
+    const url = new URL(request.url);
+    const deviceId = url.searchParams.get('deviceId');
+
+    const container = await getCosmosContainer();
+
+    let query = 'SELECT TOP 1 c.distance_cm, c.timestamp, c.deviceId FROM c';
+    const params = [];
+
+    if (deviceId) {
+        query += ' WHERE c.deviceId = @deviceId';
+        params.push({ name: '@deviceId', value: deviceId });
+    }
+
+    query += ' ORDER BY c.timestamp DESC';
+
+    const querySpec = {
+        query: query,
+        parameters: params
+    };
+
+    const { resources } = await container.items.query(querySpec).fetchAll();
+
+    if (resources.length > 0) {
+        return {
+            status: 200,
+            headers,
+            body: JSON.stringify({
+                success: true,
+                deviceId: resources[0].deviceId || null,
+                distance_cm: resources[0].distance_cm || null,
+                timestamp: resources[0].timestamp || null
+            })
+        };
+    } else {
+        return {
+            status: 200,
+            headers,
+            body: JSON.stringify({
+                success: true,
+                deviceId: null,
+                distance_cm: null,
+                timestamp: null
+            })
+        };
+    }
 }
 
 async function handleCreateTelemetry(request, context, headers) {

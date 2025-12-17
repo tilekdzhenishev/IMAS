@@ -1,4 +1,6 @@
-require('dotenv').config();
+const path = require('path');
+// Load .env from project root (parent directory)
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const client = require('azure-iot-device').Client;
 const Message = require('azure-iot-device').Message;
 const Protocol = require('azure-iot-device-mqtt').Mqtt;
@@ -6,8 +8,9 @@ const Protocol = require('azure-iot-device-mqtt').Mqtt;
 const connectionString = process.env.IOT_DEVICE_CONNECTION_STRING;
 
 if (!connectionString) {
-    console.error('Error: IOT_DEVICE_CONNECTION_STRING environment variable is not set');
-    console.error('Please create .env file with IOT_DEVICE_CONNECTION_STRING');
+    console.error('❌ Error: IOT_DEVICE_CONNECTION_STRING environment variable is not set');
+    console.error('Please create .env file in project root with IOT_DEVICE_CONNECTION_STRING');
+    console.error('Example: cp .env.example .env');
     process.exit(1);
 }
 

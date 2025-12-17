@@ -185,9 +185,11 @@ cd backend
 func azure functionapp publish imasFuncxjnonrzaxqrsg
 ```
 
+**Deployed API URL**: https://imasfuncxjnonrzaxqrsg.azurewebsites.net/api/FunctionApi
+
 ### Configure Application Settings
 
-After deployment, configure the following in Azure Portal:
+After deployment, configure the following in Azure Portal (Function App → Configuration → Application settings):
 
 - `COSMOS_DB_ENDPOINT` - Cosmos DB endpoint URL
 - `COSMOS_DB_KEY` - Cosmos DB access key
@@ -196,6 +198,23 @@ After deployment, configure the following in Azure Portal:
 - `EVENT_HUB_CONNECTION_STRING` - Event Hub connection string
 - `EVENT_HUB_NAME` - Event Hub name (default: `events`)
 - `IOTHUB_CONNECTION_STRING` - IoT Hub connection string
+
+### After Deployment
+
+1. **Verify Application Settings** in Azure Portal
+2. **Start IoT Simulator** to send data:
+   ```bash
+   cd simulator
+   node iot-simulator.js
+   ```
+3. **Test API endpoints**:
+   ```bash
+   curl https://imasfuncxjnonrzaxqrsg.azurewebsites.net/api/FunctionApi/health
+   curl https://imasfuncxjnonrzaxqrsg.azurewebsites.net/api/FunctionApi/telemetry/latest?deviceId=MySimulatedDevice
+   ```
+4. **Update TouchDesigner** to use Azure API URL instead of localhost
+
+See [POST_DEPLOYMENT.md](./POST_DEPLOYMENT.md) for detailed post-deployment instructions.
 
 ### Production Checklist
 
