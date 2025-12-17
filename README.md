@@ -4,6 +4,8 @@ IoT-based museum artifact interaction system with Azure Functions for telemetry 
 
 ## Architecture
 
+### System Overview
+
 ```
 IoT Device → IoT Hub → Event Hub → FunctionTelemetry → Cosmos DB
                                                               ↓
@@ -11,6 +13,20 @@ IoT Device → IoT Hub → Event Hub → FunctionTelemetry → Cosmos DB
                                                               ↓
                                                       TouchDesigner
 ```
+
+### C4 Diagrams
+
+#### Context Diagram
+
+![C4 Context Diagram](public/images/Untitled%20Diagram-C4%20-%20Context.drawio.png)
+
+High-level view of the system showing interactions between users, IoT devices, and external systems.
+
+#### Container Diagram
+
+![C4 Container Diagram](public/images/Container.drawio.png)
+
+Detailed view of the system's containers (Azure Functions, databases, and external services) and their interactions.
 
 ## Project Structure
 
