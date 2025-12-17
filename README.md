@@ -46,6 +46,11 @@ npm start
 ```bash
 cd simulator
 npm install
+
+# Create .env file in project root with IOT_DEVICE_CONNECTION_STRING
+cp ../.env.example ../.env
+# Edit .env with your connection string
+
 node iot-simulator.js
 ```
 
