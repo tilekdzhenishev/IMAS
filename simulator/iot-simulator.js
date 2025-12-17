@@ -1,8 +1,15 @@
+require('dotenv').config();
 const client = require('azure-iot-device').Client;
 const Message = require('azure-iot-device').Message;
 const Protocol = require('azure-iot-device-mqtt').Mqtt;
 
-const connectionString = '<>'; 
+const connectionString = process.env.IOT_DEVICE_CONNECTION_STRING;
+
+if (!connectionString) {
+    console.error('Error: IOT_DEVICE_CONNECTION_STRING environment variable is not set');
+    console.error('Please create .env file with IOT_DEVICE_CONNECTION_STRING');
+    process.exit(1);
+}
 
 function getDeviceId(connStr) {
     const parts = connStr.split(';');
@@ -44,7 +51,7 @@ function sendTelemetry() {
 
 deviceClient.open((err) => {
     if (err) {
-        console.error(`[CRITICAL] Coudn't connect to IoT Hub: ${err.message}`);
+        console.error(`[CRITICAL] Couldn't connect to IoT Hub: ${err.message}`);
     } else {
         console.log('[INFO] Successfully connected to Azure IoT Hub');
         

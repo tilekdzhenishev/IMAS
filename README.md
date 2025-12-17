@@ -1,14 +1,10 @@
 # Interactive Museum Artifact System (IMAS)
 
-A comprehensive IoT-based museum artifact interaction system that detects visitor engagement through sensors, processes data via Microsoft Azure REST API, and triggers multi-sensory responses (lights and sound) at physical artifacts.
+IoT-based museum artifact interaction system with Azure Functions for telemetry processing and REST API.
 
-## 🎯 Project Overview
+## Architecture
 
-This system creates an engaging museum experience by:
-- **Detecting** visitor interactions through IoT sensors (proximity, touch, motion, temperature)
-- **Processing** interaction data through Azure-hosted REST API built with Node.js and Express
-- **Responding** with synchronized light and sound displays at the artifact location
-- **Logging** all interactions for analytics and insights using Azure services
+### System Overview
 
 ## 🏗️ Architecture
 
@@ -152,261 +148,78 @@ node simulators/sensor-simulator.js
 # Test mode (single interaction):
 node simulators/sensor-simulator.js --test
 ```
+IoT Device → IoT Hub → Event Hub → FunctionTelemetry → Cosmos DB
+                                                              ↓
+                                                    FunctionApi (HTTP)
+                                                              ↓
+                                                      TouchDesigner
+```
 
-#### 3. Run the Response Controller
-In another terminal:
+### C4 Diagrams
+
+#### Context Diagram
+
+![C4 Context Diagram](public/images/Untitled%20Diagram-C4%20-%20Context.drawio.png)
+
+High-level view of the system showing interactions between users, IoT devices, and external systems.
+
+#### Container Diagram
+
+![C4 Container Diagram](public/images/Container.drawio.png)
+
+Detailed view of the system's containers (Azure Functions, databases, and external services) and their interactions.
+
+## Project Structure
+
+```
+IMAS/
+├── backend/              # Azure Functions
+│   ├── src/
+│   │   ├── functions/
+│   │   │   ├── FunctionApi.js          # HTTP API
+│   │   │   └── FunctionTelemetry.js    # Event Hub trigger
+│   │   └── index.js
+│   ├── package.json
+│   └── README.md
+├── simulator/            # IoT device simulator
+│   └── iot-simulator.js
+├── touchdesigner/        # TouchDesigner integration scripts
+│   └── simple_script.py
+└── README.md
+```
+
+## Quick Start
+
+### Backend (Azure Functions)
+
 ```bash
-npm run simulate-response
-# or
-node simulators/response-controller.js
-
-# Test specific artifact:
-node simulators/response-controller.js --test ART001
+cd backend
+npm install
+npm start
 ```
 
-### Testing the API
+### IoT Simulator
 
-Check API health:
 ```bash
-curl http://localhost:3000/health
+cd simulator
+npm install
+
+# Create .env file in project root with IOT_DEVICE_CONNECTION_STRING
+cp ../.env.example ../.env
+# Edit .env with your connection string
+
+node iot-simulator.js
 ```
 
-## 📡 API Documentation
+### TouchDesigner
 
-### Authentication
+See `touchdesigner/simple_script.py` for integration example.
 
-All protected endpoints require an API key in the request header:
-```
-X-API-Key: museum-artifact-api-key-2024
-```
+## Deployment
 
-### Endpoints
-
-#### Artifacts
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/artifacts` | Get all artifacts | No |
-| GET | `/api/artifacts/:artifactId` | Get artifact by ID | No |
-| POST | `/api/artifacts` | Create new artifact | Yes |
-| PUT | `/api/artifacts/:artifactId` | Update artifact | Yes |
-| DELETE | `/api/artifacts/:artifactId` | Delete artifact | Yes |
-| PATCH | `/api/artifacts/:artifactId/toggle` | Toggle active status | Yes |
-
-**Example: Create Artifact**
 ```bash
-curl -X POST http://localhost:3000/api/artifacts \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: museum-artifact-api-key-2024" \
-  -d '{
-    "name": "Ancient Sculpture",
-    "artifactId": "ART006",
-    "description": "Beautiful marble sculpture",
-    "location": {
-      "room": "Greek Gallery",
-      "section": "Sculptures"
-    },
-    "sensorConfig": {
-      "type": "proximity",
-      "sensitivity": 60,
-      "threshold": 50
-    },
-    "responsePattern": {
-      "type": "combined",
-      "sound": {
-        "enabled": true,
-        "file": "greek-music.mp3",
-        "volume": 70,
-        "duration": 5000
-      },
-      "light": {
-        "enabled": true,
-        "color": "#FFFFFF",
-        "pattern": "pulse",
-        "intensity": 80,
-        "duration": 5000
-      }
-    }
-  }'
-```
-
-#### Interactions
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/interactions` | Log new interaction | Yes |
-| GET | `/api/interactions` | Get all interactions | Yes |
-| GET | `/api/interactions/:id` | Get interaction by ID | Yes |
-| GET | `/api/interactions/artifact/:artifactId` | Get interactions for artifact | Yes |
-| PATCH | `/api/interactions/:id/process` | Mark as processed | Yes |
-| DELETE | `/api/interactions/:id` | Delete interaction | Yes |
-
-**Example: Log Interaction**
-```bash
-curl -X POST http://localhost:3000/api/interactions \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: museum-artifact-api-key-2024" \
-  -d '{
-    "artifactId": "ART001",
-    "sensorData": {
-      "type": "proximity",
-      "value": 45,
-      "unit": "cm"
-    },
-    "interactionType": "detected",
-    "deviceInfo": {
-      "deviceId": "SENSOR-001",
-      "firmwareVersion": "1.0.0"
-    }
-  }'
-```
-
-#### Responses
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/responses/trigger` | Trigger artifact response | Yes |
-| POST | `/api/responses/test/:artifactId` | Test artifact response | Yes |
-| GET | `/api/responses/history/:artifactId` | Get response history | Yes |
-
-**Example: Trigger Response**
-```bash
-curl -X POST http://localhost:3000/api/responses/trigger \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: museum-artifact-api-key-2024" \
-  -d '{
-    "artifactId": "ART001",
-    "interactionId": "507f1f77bcf86cd799439011"
-  }'
-```
-
-#### Statistics
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/stats/overview` | System overview stats | Yes |
-| GET | `/api/stats/artifact/:artifactId` | Artifact-specific stats | Yes |
-| GET | `/api/stats/hourly` | Hourly interaction stats | Yes |
-
-**Example: Get Overview**
-```bash
-curl http://localhost:3000/api/stats/overview \
-  -H "X-API-Key: museum-artifact-api-key-2024"
-```
-
-## 🗄️ Data Models
-
-### Artifact Model
-
-```javascript
-{
-  name: String,                    // Artifact name
-  artifactId: String,              // Unique identifier (e.g., "ART001")
-  description: String,             // Description
-  location: {
-    room: String,                  // Room name
-    section: String,               // Section within room
-    coordinates: { x: Number, y: Number }
-  },
-  sensorConfig: {
-    type: String,                  // proximity|touch|motion|temperature|custom
-    sensitivity: Number,           // 0-100
-    threshold: Number              // Trigger threshold
-  },
-  responsePattern: {
-    type: String,                  // sound|light|combined
-    sound: {
-      enabled: Boolean,
-      file: String,
-      volume: Number,              // 0-100
-      duration: Number             // milliseconds
-    },
-    light: {
-      enabled: Boolean,
-      color: String,               // Hex color
-      pattern: String,             // solid|blink|pulse|rainbow
-      intensity: Number,           // 0-100
-      duration: Number             // milliseconds
-    }
-  },
-  isActive: Boolean,
-  metadata: {
-    period: String,
-    artist: String,
-    yearCreated: Number,
-    category: String
-  },
-  statistics: {
-    totalInteractions: Number,
-    lastInteraction: Date
-  }
-}
-```
-
-### Interaction Model
-
-```javascript
-{
-  artifactId: String,              // Reference to artifact
-  artifact: ObjectId,              // Populated artifact
-  sensorData: {
-    type: String,                  // Sensor type
-    value: Number,                 // Sensor reading
-    unit: String,                  // Measurement unit
-    rawData: Mixed                 // Additional data
-  },
-  interactionType: String,         // detected|engaged|completed
-  duration: Number,                // Interaction duration (ms)
-  responseTriggered: Boolean,
-  responseDetails: {
-    sound: { played: Boolean, file: String },
-    light: { activated: Boolean, pattern: String },
-    triggeredAt: Date
-  },
-  deviceInfo: {
-    deviceId: String,
-    firmwareVersion: String,
-    batteryLevel: Number,
-    signalStrength: Number
-  },
-  processed: Boolean,
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
-## 🔧 Configuration
-
-### Sensor Types
-
-- **proximity**: Detects visitor distance (cm)
-- **touch**: Pressure sensors (0-100)
-- **motion**: Movement detection (intensity 0-10)
-- **temperature**: Temperature changes (°C)
-- **custom**: Custom sensor implementations
-
-### Response Patterns
-
-#### Light Patterns
-- **solid**: Constant illumination
-- **blink**: On/off blinking
-- **pulse**: Smooth fade in/out
-- **rainbow**: Color cycling
-
-#### Sound Configuration
-- Supports MP3 audio files
-- Volume control (0-100%)
-- Duration in milliseconds
-
-## 📊 Monitoring & Logs
-
-Application logs are stored in the `logs/` directory:
-- `combined.log`: All logs
-- `error.log`: Error logs only
-
-View logs in real-time:
-```bash
-tail -f logs/combined.log
+cd backend
+func azure functionapp publish imasFuncxjnonrzaxqrsg
 ```
 
 ## 🧪 Testing
@@ -526,8 +339,13 @@ For support, please open an issue in the GitHub repository or contact the develo
 - [API Examples](API_EXAMPLES.md) - Ready-to-use API request examples
 - [Quick Start](QUICKSTART.md) - Get started in 5 minutes
 
----
+- [Backend README](./backend/README.md) - Azure Functions documentation
+- [TouchDesigner Scripts](./touchdesigner/) - Integration examples
 
-**Built with ❤️ for interactive museum experiences**  
-**Powered by Microsoft Azure** ☁️
+## Technologies
 
+- Azure Functions (Node.js)
+- Azure IoT Hub
+- Azure Cosmos DB
+- Azure Event Hub
+- TouchDesigner
