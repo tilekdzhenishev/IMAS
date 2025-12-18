@@ -8,7 +8,7 @@ const Protocol = require('azure-iot-device-mqtt').Mqtt;
 const connectionString = process.env.IOT_DEVICE_CONNECTION_STRING;
 
 if (!connectionString) {
-    console.error('❌ Error: IOT_DEVICE_CONNECTION_STRING environment variable is not set');
+    console.error('Error: IOT_DEVICE_CONNECTION_STRING environment variable is not set');
     console.error('Please create .env file in project root with IOT_DEVICE_CONNECTION_STRING');
     console.error('Example: cp .env.example .env');
     process.exit(1);
