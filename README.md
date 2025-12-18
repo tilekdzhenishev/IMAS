@@ -2,7 +2,7 @@
 
 IoT-based museum artifact interaction system with Azure Functions for telemetry processing and REST API.
 
-## 🏗️ Architecture
+## Architecture
 
 ### System Overview
 
@@ -32,6 +32,9 @@ Detailed view of the system's containers (Azure Functions, databases, and extern
 
 ```
 IMAS/
+├── azure/                # bicep
+│   ├──main.bicep
+│   ├──README.md
 ├── backend/              # Azure Functions
 │   ├── src/
 │   │   ├── functions/
@@ -49,17 +52,15 @@ IMAS/
 └── README.md
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
 - **Node.js** (v14 or higher)
 - **Azure Functions Core Tools** (v4.x)
-- **Azure Account** with:
-  - IoT Hub
-  - Cosmos DB
-  - Event Hub
-  - Function App
+- **Azure CLI**
+- **VS Code Extensions**: Azure Functions & Bicep
+- **Azure Account**
 
 ### Installation
 
@@ -70,35 +71,60 @@ IMAS/
    cd IMAS
    ```
 
-2. **Set up Backend (Azure Functions)**
+2. **Provision Infrastructure (Azure Bicep)**
+   Before configuring the backend, you must create the resources in Azure:
+
+   ```bash
+   az login
+   az group create --name <your-resource-group> --location <location>
+   az deployment group create --resource-group <your-resource-group> --template-file main.bicep
+   ```
+
+   Note: Save the values from the Outputs section of this command.
+
+3. **Set up Backend (Azure Functions)**
 
    ```bash
    cd backend
    npm install
    ```
 
-3. **Configure environment variables**
+   Configure backend/local.settings.json using the values from the Bicep outputs.
 
-   Create `.env` file in project root:
+   For EVENT_HUB_CONNECTION_STRING, manually retrieve the Event Hub-compatible endpoint from the Azure Portal (IoT Hub > Built-in endpoints).
 
-   ```env
-   IOT_DEVICE_CONNECTION_STRING=HostName=YOUR_IOT_HUB.azure-devices.net;DeviceId=YOUR_DEVICE_ID;SharedAccessKey=YOUR_SHARED_ACCESS_KEY
-   ```
-
-   Configure `backend/local.settings.json` with Azure connection strings:
-   - `COSMOS_DB_ENDPOINT`
-   - `COSMOS_DB_KEY`
-   - `EVENT_HUB_CONNECTION_STRING`
-   - `IOTHUB_CONNECTION_STRING`
-
-4. **Set up IoT Simulator**
+4. **Deploy to Azure (Production)** To run your functions in the cloud:
 
    ```bash
-   cd simulator
+   func azure functionapp publish <functionAppName_from_outputs>
+   ```
+
+5. **Set up IoT Simulator**
+
+   ```bash
+   cd ../simulator
    npm install
    ```
 
-## 🎮 Usage
+   Register your device:
+
+   ```bash
+   az iot hub device-identity create --hub-name <hub-name> --device-id <device-id>
+   ```
+
+   Get the connection string:
+
+   ```bash
+   az iot hub device-identity connection-string show --hub-name <hub-name> --device-id <device-id>
+   ```
+
+   Update iot-simulator.js with this string and run:
+
+   ```bash
+   node iot-simulator.js
+   ```
+
+## Usage
 
 ### Running the System
 
@@ -126,7 +152,7 @@ The simulator will send telemetry data to Azure IoT Hub every 5 seconds.
 
 See `touchdesigner/simple_script.py` for integration example. The script fetches telemetry data from the API and updates TouchDesigner parameters.
 
-## 🧪 Testing
+## Testing
 
 ### Test Azure Functions Locally
 
@@ -150,7 +176,7 @@ curl http://localhost:7071/api/FunctionApi/telemetry/latest?deviceId=MySimulated
 curl http://localhost:7071/api/FunctionApi/telemetry/stats
 ```
 
-## 🚢 Deployment
+## Deployment
 
 ### Deploy to Azure
 
@@ -179,12 +205,13 @@ After deployment, configure the following in Azure Portal:
 - ✅ Set up Azure Monitor alerts
 - ✅ Configure auto-scaling in Function App plan
 
-## 📚 Documentation
+## Documentation
 
+- [Bicep README] (./azure/README.md) - Bicep Infrastructure documentation
 - [Backend README](./backend/README.md) - Azure Functions documentation
 - [TouchDesigner Scripts](./touchdesigner/) - Integration examples
 
-## 🛠️ Technologies
+## Technologies
 
 - **Azure Functions** (Node.js) - Serverless compute
 - **Azure IoT Hub** - IoT device management
@@ -192,7 +219,7 @@ After deployment, configure the following in Azure Portal:
 - **Azure Event Hub** - Event streaming
 - **TouchDesigner** - Real-time visualization
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -200,10 +227,10 @@ After deployment, configure the following in Azure Portal:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License.
 
-## 📞 Support
+## Support
 
 For support, please open an issue in the GitHub repository or contact the development team.
